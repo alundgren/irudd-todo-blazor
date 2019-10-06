@@ -1,0 +1,48 @@
+    /* Color scheme: https://www.canva.com/design/DADfKdGamLE/view*/
+    /*https://css-tricks.com/snippets/css/a-guide-to-flexbox/*/
+    .main-card-container {
+        display: flex;
+        flex-direction:column;
+        justify-content: flex-start;
+        align-items:center;
+        flex-grow:1;
+        min-height:100vh;
+        height:auto;
+        padding: 1em;
+        background-color:#a49592;
+      }
+  
+      .main-card {
+        min-height:90vh;
+        min-width:50vw;
+        height:auto;
+        width:90vw;
+      }
+  
+      .main-card .card-header {
+        color: white;
+        background-color:#727077;
+      }
+  
+      .main-card .card-body {
+        color: black;
+        background-color: #eed8c9;
+      }
+  
+      .trash {
+        color:#dc3545;
+        font-size:2em;
+      }
+      .done-todo-item {
+          color: rgb(100,100,100)
+       }
+      .done-todo-item:after {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        height: 3px;
+        background: black;
+        content: "";
+        width: 100%;
+        display: block;
+      }

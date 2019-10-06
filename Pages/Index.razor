@@ -1,0 +1,45 @@
+﻿@page "/"
+@using Irudd.Todo.Data
+@using Irudd.Todo.Components
+@inject TodoService todoService
+
+@code {
+    private TodoModel model;
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = await todoService.GetTodoModelAsync();
+    }
+
+    private void RemoveDone()
+    {
+        var doneItems = model.Items.Where(x => x.DoneDate.HasValue && !x.RemovedDate.HasValue).ToList();
+        doneItems.ForEach(x => x.RemovedDate = DateTime.UtcNow);
+    }
+}
+    <div class="main-card-container">
+      <div class="main-card card border-primary">
+        <div class="card-header">
+          <form class="bs-component">
+            <div class="form-group">
+              <div class="input-group">
+                <input type="text" class="form-control">
+                <div class="input-group-append">
+                <span class="input-group-text"><i class="fa fa-plus-circle"></i></span>                      
+                </div>
+              </div>
+            </div>          
+          </form>
+        </div>
+        <div class="card-body">
+            @foreach(var item in model.Items.Where(x => !x.RemovedDate.HasValue))
+            {
+                <TodoItemView  Item="@item"></TodoItemView>                
+          <!--h4 class="card-title">Primary card title</h4-->
+            }
+        </div>
+        <div class="card-footer">
+          <span @onclick="RemoveDone"><i class="fa fa-trash-o pull-right trash"></i></span>
+        </div>
+      </div>  
+    </div>

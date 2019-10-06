@@ -1,0 +1,17 @@
+﻿@code {
+    [Parameter]
+    public Irudd.Todo.Data.TodoItem Item { get; set; }
+
+    private void ToggleDone()
+    {
+        Item.DoneDate = Item.DoneDate.HasValue ? new DateTime?() : DateTime.UtcNow;
+    }
+}
+@if(Item.IsCategory)
+{
+    <div class="alert alert-info" style="margin-left:-1.25em">@Item.Text</div>
+}
+else
+{
+    <div @onclick="ToggleDone" class="alert alert-secondary @(Item.DoneDate.HasValue ? "done-todo-item" : "")">@Item.Text</div>
+}
