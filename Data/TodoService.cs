@@ -14,6 +14,7 @@ namespace Irudd.Todo.Data
                 Items = Enumerable.Range(0, 10).Select(x => new TodoItem 
                 {
                     Text = $"Item {x}",
+                    IsFocused = x % 5 == 0,
                     IsCategory = x % 5 == 0
                 }).ToList()
             });

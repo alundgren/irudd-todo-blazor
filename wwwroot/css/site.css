@@ -33,6 +33,15 @@
         color:#dc3545;
         font-size:2em;
       }
+
+      .to-category {
+        color: rgb(70,70,70);
+      }
+
+      .to-item {
+        color: rgb(70,70,70);
+      }
+
       .done-todo-item {
           color: rgb(100,100,100)
        }
@@ -41,7 +50,7 @@
         left: 0;
         top: 50%;
         height: 3px;
-        background: black;
+        background: rgb(100,100,100);
         content: "";
         width: 100%;
         display: block;

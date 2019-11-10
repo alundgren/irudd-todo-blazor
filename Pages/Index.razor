@@ -16,6 +16,30 @@
         var doneItems = model.Items.Where(x => x.DoneDate.HasValue && !x.RemovedDate.HasValue).ToList();
         doneItems.ForEach(x => x.RemovedDate = DateTime.UtcNow);
     }
+
+    private IEnumerable<Irudd.Todo.Data.TodoItem> GetVisibleItems() 
+    {
+        var focusCategoryIndex = model.Items.Select((x, i) => new { x, i } ).Where(x => x.x.IsFocused && x.x.IsCategory && ! x.x.RemovedDate.HasValue).Select(x => (int?)x.i).FirstOrDefault();
+        if(focusCategoryIndex.HasValue)
+        {
+            yield return model.Items[focusCategoryIndex.Value];
+            for(var i=focusCategoryIndex.Value + 1; i < model.Items.Count; i++)
+            {
+                var item = model.Items[i];
+                if(item.IsCategory)
+                    break;
+                else
+                    yield return item;
+            }
+        }
+        else
+        {
+            foreach(var item in model.Items)
+            {
+                yield return item;
+            }
+        }        
+    }
 }
     <div class="main-card-container">
       <div class="main-card card border-primary">
@@ -32,9 +56,9 @@
           </form>
         </div>
         <div class="card-body">
-            @foreach(var item in model.Items.Where(x => !x.RemovedDate.HasValue))
+            @foreach(var item in GetVisibleItems())
             {
-                <TodoItemView  Item="@item"></TodoItemView>                
+                <TodoItemView  Item="@item"></TodoItemView>
           <!--h4 class="card-title">Primary card title</h4-->
             }
         </div>

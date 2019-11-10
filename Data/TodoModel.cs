@@ -14,5 +14,6 @@ namespace Irudd.Todo.Data
         public bool IsCategory { get; set; }
         public DateTime? DoneDate { get; set; }
         public DateTime? RemovedDate { get; set; }
+        public bool IsFocused { get;set; }
     }
 }
