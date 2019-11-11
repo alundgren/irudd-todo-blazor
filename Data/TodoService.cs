@@ -19,5 +19,12 @@ namespace Irudd.Todo.Data
                 }).ToList()
             });
         }
+
+        public event Action RefreshRequested;
+        
+        public void CallRequestRefresh()
+    {
+         RefreshRequested?.Invoke();
+    }
     }
 }

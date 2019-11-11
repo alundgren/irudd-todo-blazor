@@ -1,4 +1,8 @@
-﻿@code {
+﻿@using Irudd.Todo.Data
+@using Irudd.Todo.Components
+@inject TodoService todoService
+
+@code {
     [Parameter]
     public Irudd.Todo.Data.TodoItem Item { get; set; }
 
@@ -23,6 +27,7 @@
     private void ToggleFocus() 
     {
         Item.IsFocused = !Item.IsFocused;
+        todoService.CallRequestRefresh();
     }
 }
 @if(Item.IsCategory)

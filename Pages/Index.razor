@@ -9,12 +9,18 @@
     protected override async Task OnInitializedAsync()
     {
         model = await todoService.GetTodoModelAsync();
+        todoService.RefreshRequested += RefreshMe;
     }
 
     private void RemoveDone()
     {
         var doneItems = model.Items.Where(x => x.DoneDate.HasValue && !x.RemovedDate.HasValue).ToList();
         doneItems.ForEach(x => x.RemovedDate = DateTime.UtcNow);
+    }
+
+    private void RefreshMe()
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     private IEnumerable<Irudd.Todo.Data.TodoItem> GetVisibleItems() 
