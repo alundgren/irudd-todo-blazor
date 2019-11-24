@@ -6,35 +6,18 @@
     [Parameter]
     public Irudd.Todo.Data.TodoItem Item { get; set; }
 
+    [Parameter]
+    public Irudd.Todo.Data.TodoCategory Category { get; set; }    
+
     private void ToggleDone()
     {
-        Item.DoneDate = Item.DoneDate.HasValue ? new DateTime?() : DateTime.UtcNow;
+        Item.IsDone = !Item.IsDone;
     }
 
-    private void ChangeToCategory() 
+    private async Task ChangeToCategory() 
     {
-        Item.IsCategory = true;
-        Item.DoneDate = null;
-        Item.RemovedDate = null;
-    }
-
-    private void ChangeToItem() 
-    {
-        Item.IsCategory = false;
-        Item.RemovedDate = null;
-    }
-
-    private void ToggleFocus() 
-    {
-        Item.IsFocused = !Item.IsFocused;
+        await todoService.ConvertToCategory(Category, Item);
         todoService.CallRequestRefresh();
     }
 }
-@if(Item.IsCategory)
-{
-    <div @onclick="ToggleFocus" class="alert alert-info" style="margin-left:-1.25em">@Item.Text <span class="to-item"><i @onclick="ChangeToItem" class="fa fa-arrow-circle-o-right pull-right"></i></span></div>
-}
-else
-{    
-    <div @onclick="ToggleDone" class="alert alert-secondary @(Item.DoneDate.HasValue ? "done-todo-item" : "")">@Item.Text <span class="to-category"><i @onclick="ChangeToCategory" class="fa fa-arrow-circle-o-left pull-right"></i></span></div>
-}
+<div @onclick="ToggleDone" class="alert alert-secondary @(Item.IsDone ? "done-todo-item" : "")">@Item.Text <span class="to-category"><i @onclick="ChangeToCategory" class="fa fa-arrow-circle-o-left pull-right"></i></span></div>

@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 namespace Irudd.Todo.Data
 {
-    public class TodoModel
-    {
-        public List<TodoItem> Items { get; set; }
-    }
-
-    public class TodoItem 
+    public class TodoItem
     {
         public string Text { get; set; }
-        public bool IsCategory { get; set; }
-        public DateTime? DoneDate { get; set; }
-        public DateTime? RemovedDate { get; set; }
-        public bool IsFocused { get;set; }
+        public bool IsDone { get; set; }
+    }
+
+    public class TodoCategory
+    {
+        public string Text { get; set; }
+        public bool IsFocused { get; set; }
+        public bool IsDefaultCategory { get; set; }
+        public List<TodoItem> Items { get; set; }
     }
 }

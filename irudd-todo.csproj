@@ -5,4 +5,8 @@
     <RootNamespace>Irudd.Todo</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Dropbox.Api" Version="4.9.4" />
+  </ItemGroup>
+
 </Project>

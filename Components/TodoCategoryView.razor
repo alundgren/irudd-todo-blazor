@@ -1,0 +1,25 @@
+@using Irudd.Todo.Data
+@using Irudd.Todo.Components
+@inject TodoService todoService
+
+@code {
+    [Parameter]
+    public Irudd.Todo.Data.TodoCategory Category { get; set; }
+
+    private async Task ChangeToItem() 
+    {
+        await todoService.ConvertToItem(Category);
+        todoService.CallRequestRefresh();
+    }
+
+    private void ToggleFocus() 
+    {
+        Category.IsFocused = !Category.IsFocused;
+        todoService.CallRequestRefresh();
+    }
+}
+<div @onclick="ToggleFocus" class="alert alert-info" style="margin-left:-1.25em">@Category.Text @if(!Category.IsDefaultCategory) { <span class="to-item"><i @onclick="ChangeToItem" class="fa fa-arrow-circle-o-right pull-right"></i></span> }</div>
+@foreach (var item in Category.Items)
+{
+    <TodoItemView Item="@item" Category="@Category"></TodoItemView>
+}

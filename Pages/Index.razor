@@ -4,18 +4,13 @@
 @inject TodoService todoService
 
 @code {
-    private TodoModel model;
+    private List<TodoCategory> categories;
+    private string newItemText;
 
     protected override async Task OnInitializedAsync()
     {
-        model = await todoService.GetTodoModelAsync();
+        categories = await todoService.GetCategoriesAsync();
         todoService.RefreshRequested += RefreshMe;
-    }
-
-    private void RemoveDone()
-    {
-        var doneItems = model.Items.Where(x => x.DoneDate.HasValue && !x.RemovedDate.HasValue).ToList();
-        doneItems.ForEach(x => x.RemovedDate = DateTime.UtcNow);
     }
 
     private void RefreshMe()
@@ -23,28 +18,17 @@
         InvokeAsync(StateHasChanged);
     }
 
-    private IEnumerable<Irudd.Todo.Data.TodoItem> GetVisibleItems() 
+    private IEnumerable<TodoCategory> GetVisibleCategories()
     {
-        var focusCategoryIndex = model.Items.Select((x, i) => new { x, i } ).Where(x => x.x.IsFocused && x.x.IsCategory && ! x.x.RemovedDate.HasValue).Select(x => (int?)x.i).FirstOrDefault();
-        if(focusCategoryIndex.HasValue)
+      var f = categories.FirstOrDefault(x => x.IsFocused);
+      if(f != null) {
+        yield return f;
+      } else {
+        foreach(var c in categories)
         {
-            yield return model.Items[focusCategoryIndex.Value];
-            for(var i=focusCategoryIndex.Value + 1; i < model.Items.Count; i++)
-            {
-                var item = model.Items[i];
-                if(item.IsCategory)
-                    break;
-                else
-                    yield return item;
-            }
+          yield return c;
         }
-        else
-        {
-            foreach(var item in model.Items)
-            {
-                yield return item;
-            }
-        }        
+      }
     }
 }
     <div class="main-card-container">
@@ -53,23 +37,23 @@
           <form class="bs-component">
             <div class="form-group">
               <div class="input-group">
-                <input type="text" class="form-control">
+                <input type="text" @bind="@newItemText" class="form-control" />
                 <div class="input-group-append">
-                <span class="input-group-text"><i class="fa fa-plus-circle"></i></span>                      
+                  <span class="input-group-text"><i class="fa fa-plus-circle"></i></span>                      
                 </div>
               </div>
             </div>          
           </form>
         </div>
-        <div class="card-body">
-            @foreach(var item in GetVisibleItems())
+        <div class="card-body @(categories.Any(x => x.IsFocused) ? "card-body-focused" : "")">
+            @foreach(var category in GetVisibleCategories())
             {
-                <TodoItemView  Item="@item"></TodoItemView>
+                <TodoCategoryView  Category="@category"></TodoCategoryView>
           <!--h4 class="card-title">Primary card title</h4-->
             }
         </div>
         <div class="card-footer">
-          <span @onclick="RemoveDone"><i class="fa fa-trash-o pull-right trash"></i></span>
+          <span><i class="fa fa-trash-o pull-right trash"></i></span>
         </div>
       </div>  
     </div>

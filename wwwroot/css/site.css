@@ -28,6 +28,10 @@
         color: black;
         background-color: #eed8c9;
       }
+
+      .card-body-focused {
+        padding-top: 0.1em
+      }
   
       .trash {
         color:#dc3545;
