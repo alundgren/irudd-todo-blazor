@@ -24,7 +24,7 @@ namespace Irudd.Todo.Data
 
         public async Task<TodoCategory> GetCategory(NormalizedString categoryText)
         {
-            return await Task.FromResult(Categories.FirstOrDefault(x => x.Equals(categoryText)));
+            return await Task.FromResult(Categories.FirstOrDefault(x => x.Text.Equals(categoryText)));
         }
 
         public async Task<TodoItem> GetItem(NormalizedString categoryText, NormalizedString itemText)

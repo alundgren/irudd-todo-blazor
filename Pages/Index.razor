@@ -18,6 +18,15 @@
         InvokeAsync(StateHasChanged);
     }
 
+    private async Task AddItem()
+    {
+        if(string.IsNullOrWhiteSpace(this.newItemText))
+            return;
+        var c = this.categories.FirstOrDefault(x => x.IsFocused);
+        await this.todoService.AddItem(this.newItemText, c?.Text);
+        this.todoService.CallRequestRefresh();
+    }
+
     private IEnumerable<TodoCategory> GetVisibleCategories()
     {
       var f = categories.FirstOrDefault(x => x.IsFocused);
@@ -39,7 +48,7 @@
               <div class="input-group">
                 <input type="text" @bind="@newItemText" class="form-control" />
                 <div class="input-group-append">
-                  <span class="input-group-text"><i class="fa fa-plus-circle"></i></span>                      
+                  <span @onclick="AddItem" class="input-group-text"><i class="fa fa-plus-circle"></i></span>
                 </div>
               </div>
             </div>          
