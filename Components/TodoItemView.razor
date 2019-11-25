@@ -16,7 +16,7 @@
 
     private async Task ChangeToCategory() 
     {
-        await todoService.ConvertToCategory(Category, Item);
+        await todoService.ConvertItemToCategory(Category.Text, Item.Text);
         todoService.CallRequestRefresh();
     }
 }
