@@ -1,0 +1,68 @@
+@using Irudd.Todo.Data
+@using Irudd.Todo.Components
+@inject TodoService todoService
+
+@code {
+    private List<TodoCategory> categories;
+    private string newItemText;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await todoService.GetCategoriesAsync();
+        todoService.RefreshRequested += RefreshMe;
+    }
+
+    private void RefreshMe()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AddItem()
+    {
+        if(string.IsNullOrWhiteSpace(this.newItemText))
+            return;
+        var c = this.categories.FirstOrDefault(x => x.IsFocused);
+        await this.todoService.AddItem(this.newItemText, c?.Text);
+        this.newItemText = "";
+        this.todoService.CallRequestRefresh();
+    }
+
+    private IEnumerable<TodoCategory> GetVisibleCategories()
+    {
+      var f = categories.FirstOrDefault(x => x.IsFocused);
+      if(f != null) {
+        yield return f;
+      } else {
+        foreach(var c in categories)
+        {
+          yield return c;
+        }
+      }
+    }
+}
+
+<div class="main-card-container">
+    <div class="main-card card border-primary">
+    <div class="card-header">
+        <form class="bs-component prevent-default" id="id1">
+        <div class="form-group">
+            <div class="input-group">
+            <input type="text" @bind="@newItemText" class="form-control" />
+            <div class="input-group-append">
+                <button @onclick="AddItem" type="submit" class="input-group-text prevent-default"><i class="fa fa-plus-circle"></i></button>
+            </div>
+            </div>
+        </div>          
+        </form>
+    </div>
+    <div class="card-body @(categories.Any(x => x.IsFocused) ? "card-body-focused" : "")">
+        @foreach(var category in GetVisibleCategories())
+        {
+            <TodoCategoryView  Category="@category"></TodoCategoryView>
+        }
+    </div>
+    <div class="card-footer">
+        <span><i class="fa fa-trash-o pull-right trash"></i></span>
+    </div>
+    </div>  
+</div>
