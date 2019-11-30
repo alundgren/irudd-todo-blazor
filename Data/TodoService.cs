@@ -9,14 +9,22 @@ namespace Irudd.Todo.Data
     {
         public static List<TodoCategory> Categories { get; set; }
 
-        public Task<List<TodoCategory>> GetCategories()
+        public Task<List<TodoCategory>> GetCategories(List<TodoCategory> clientCategories)
         {
             if (Categories == null)
             {
-                Categories = new List<TodoCategory>
+                if (clientCategories == null)
                 {
-                    new TodoCategory { Text = "Todo", IsFocused = true, IsDefaultCategory = true, Items = new List<TodoItem>() }
-                };
+                    Categories = new List<TodoCategory>
+                    {
+                        new TodoCategory { Text = "Todo", IsFocused = true, IsDefaultCategory = true, Items = new List<TodoItem>() }
+                    };
+                }
+                else
+                {
+                    Categories = clientCategories;
+                }
+
             }
             return Task.FromResult(Categories);
         }

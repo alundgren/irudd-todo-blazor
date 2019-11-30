@@ -1,34 +1,41 @@
 @using Irudd.Todo.Data
 @using Irudd.Todo.Components
+@using Microsoft.AspNetCore.ProtectedBrowserStorage
 @inject TodoService todoService
-@inject Blazored.LocalStorage.ILocalStorageService localStorage
+@inject ProtectedLocalStorage localStorage
 
 @code {
-    private const string LocalStorageKey = "StoredCategories_20191130.2";
     private List<TodoCategory> categories;
     private string newItemText;
+    private const string ProtectedLocalStoreKey = "IruddTodo-ProtectedLocalStorage-20191130.1";
+    private bool isConnected = false;
+    private bool hasChanged = false;
 
     protected override Task OnInitializedAsync()
     {
-        todoService.OnChange += () => 
-        {
-            if(this.categories != null)
-                this.localStorage.SetItemAsync(LocalStorageKey, this.categories);
-            InvokeAsync(StateHasChanged);
-        };
         return Task.CompletedTask;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if(firstRender)
+        if (firstRender)
         {
-            var storedCategories = await localStorage.GetItemAsync<List<TodoCategory>>(LocalStorageKey);
-            if(storedCategories == null)
+            var localCategories = await localStorage.GetAsync<List<TodoCategory>>(ProtectedLocalStoreKey);
+            this.categories = await todoService.GetCategories(localCategories);
+            todoService.OnChange += async () => 
             {
-                this.categories = await todoService.GetCategories();
-            }
+                var categories = await todoService.GetCategories(null);
+                hasChanged = true;
+                this.categories = categories;
+                await InvokeAsync(StateHasChanged);
+            };
+            isConnected = true;
             await InvokeAsync(StateHasChanged);
+        }
+        else if(hasChanged) 
+        {
+            await localStorage.SetAsync(ProtectedLocalStoreKey, categories);
+            hasChanged = false;
         }
     }
 
@@ -69,6 +76,8 @@
     }
 }
 
+@if(isConnected) 
+{
 <div class="main-card-container">
     <div class="main-card card border-primary">
     <div class="card-header">
@@ -94,3 +103,4 @@
     </div>
     </div>  
 </div>
+}

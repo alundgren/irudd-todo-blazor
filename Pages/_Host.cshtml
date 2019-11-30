@@ -17,12 +17,19 @@
     <app>
         @(await Html.RenderComponentAsync<App>(RenderMode.ServerPrerendered))
     </app>
+    <script src="_content/Microsoft.AspNetCore.ProtectedBrowserStorage/protectedBrowserStorage.js"></script>
     <script src="_framework/blazor.server.js"></script>
 
     <script>
         //TODO: Blazor 3.1 is supposed to have a native solution to this. https://github.com/aspnet/AspNetCore/pull/14509
         document.addEventListener('click', function(e){
-            if(e.target && e.target.classList && e.target.classList.contains('prevent-default')){
+            if(e.target && e.target.classList && e.target.classList.contains('prevent-default')) {
+                e.preventDefault()
+            }
+        })
+
+        document.querySelector('body').addEventListener('submit', function(e){
+            if(e.target && e.target.classList && e.target.classList.contains('prevent-default')) {
                 e.preventDefault()
             }
         })
