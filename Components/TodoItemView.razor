@@ -9,15 +9,14 @@
     [Parameter]
     public Irudd.Todo.Data.TodoCategory Category { get; set; }    
 
-    private void ToggleDone()
+    private async Task ToggleDone()
     {
-        Item.IsDone = !Item.IsDone;
+        await todoService.SetIsDone(Category.Text, Item.Text, !Item.IsDone);
     }
 
     private async Task ChangeToCategory() 
     {
         await todoService.ConvertItemToCategory(Category.Text, Item.Text);
-        todoService.CallRequestRefresh();
     }
 }
-<div @onclick="ToggleDone" class="alert alert-secondary @(Item.IsDone ? "done-todo-item" : "")">@Item.Text <span class="to-category"><i @onclick="ChangeToCategory" class="fa fa-arrow-circle-o-left pull-right"></i></span></div>
+<div @onclick="ToggleDone" class="alert alert-secondary @(Item.IsDone ? "done-todo-item" : "")">@Item.Text @if(!Item.IsDone){<span class="to-category"><i @onclick="ChangeToCategory" class="fa fa-arrow-circle-o-left pull-right"></i></span>}</div>

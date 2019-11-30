@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Irudd.Todo.Data
 {
@@ -10,13 +9,13 @@ namespace Irudd.Todo.Data
     {
         public static List<TodoCategory> Categories { get; set; }
 
-        public Task<List<TodoCategory>> GetCategoriesAsync()
+        public Task<List<TodoCategory>> GetCategories()
         {
             if (Categories == null)
             {
                 Categories = new List<TodoCategory>
                 {
-                    new TodoCategory { Text = "Todo", IsFocused = true, IsDefaultCategory = true, Items = new List<TodoItem>() { new TodoItem { Text = "test" }, new TodoItem { Text = "test2" } } }
+                    new TodoCategory { Text = "Todo", IsFocused = true, IsDefaultCategory = true, Items = new List<TodoItem>() }
                 };
             }
             return Task.FromResult(Categories);
@@ -48,6 +47,19 @@ namespace Irudd.Todo.Data
 
             //Add the item to the generic category
             await AddItem(category.Text, null);
+
+            TriggerOnChange();
+        }
+
+        public async Task SetIsDone(NormalizedString categoryText, NormalizedString itemText, bool isDone)
+        {
+            var i = await GetItem(categoryText, itemText);
+            if (i == null)
+                return;
+
+            i.IsDone = isDone;
+
+            TriggerOnChange();
         }
 
         public async Task ConvertItemToCategory(NormalizedString categoryText, NormalizedString itemText)
@@ -61,17 +73,28 @@ namespace Irudd.Todo.Data
             category.Items.Remove(item);
             var newCategory = new TodoCategory { Text = item.Text, Items = new List<TodoItem>() };
             Categories.Add(newCategory);
-            await FocusCategory(newCategory.Text);
+            await SetIsCategoryFocused(newCategory.Text, true);
+
+            TriggerOnChange();
         }
 
-        public async Task FocusCategory(NormalizedString categoryText)
+        public async Task SetIsCategoryFocused(NormalizedString categoryText, bool isFocused)
         {
-            var category = await GetCategory(categoryText);
             Categories.ForEach(x => x.IsFocused = false);
-            category.IsFocused = true;
+
+            if (isFocused)
+            {
+                var category = await GetCategory(categoryText);
+                if (category != null)
+                {
+                    category.IsFocused = true;
+                }
+            }
+
+            TriggerOnChange();
         }
 
-        public async Task<TodoItem> AddItem(NormalizedString itemText, NormalizedString categoryText = null)
+        public async Task AddItem(NormalizedString itemText, NormalizedString categoryText = null)
         {
             TodoCategory d = null;
             if (categoryText != null)
@@ -81,9 +104,44 @@ namespace Irudd.Todo.Data
             {
                 d = Categories.Single(x => x.IsDefaultCategory);
             }
-            var i = new TodoItem { Text = itemText };
-            d.Items.Add(i);
-            return i;
+            var i = d.Items.FirstOrDefault(x => x.Text == itemText);
+            if (i == null)
+            {
+                i = new TodoItem { Text = itemText };
+                d.Items.Add(i);
+            }
+
+            TriggerOnChange();
+        }
+
+        public async Task RemoveDone(List<Tuple<NormalizedString, NormalizedString>> categoryAndItemTexts)
+        {
+            if (categoryAndItemTexts == null)
+            {
+                return;
+            }
+            var wasChanged = false;
+            foreach (var c in categoryAndItemTexts.GroupBy(x => x.Item1))
+            {
+                var category = await GetCategory(c.Key);
+                if (category != null)
+                {
+                    foreach (var itemText in c)
+                    {
+                        var item = await GetItem(category.Text, itemText.Item2);
+                        if (item != null)
+                        {
+                            category.Items.Remove(item);
+                            wasChanged = true;
+                        }
+                    }
+                }
+            }
+
+            if (wasChanged)
+            {
+                TriggerOnChange();
+            }
         }
 
         private bool Eq(string s1, string s2)
@@ -91,44 +149,11 @@ namespace Irudd.Todo.Data
             return (s1 ?? "").ToLowerInvariant().Trim() == (s2 ?? "").ToLowerInvariant().Trim();
         }
 
-        public event Action RefreshRequested;
+        public event Action OnChange;
 
-        public void CallRequestRefresh()
+        public void TriggerOnChange()
         {
-            RefreshRequested?.Invoke();
+            OnChange?.Invoke();
         }
-    }
-
-    public class NormalizedString : IEquatable<NormalizedString>
-    {
-        private readonly string s;
-        public NormalizedString(string s)
-        {
-            this.s = Normalize(s);
-        }
-
-        public static string Normalize(string s)
-        {
-            return s?.Trim()?.Replace("\r", "").Replace("\n", "").Replace("[", "(").Replace("]", ")");
-        }
-
-        public bool Equals([AllowNull] NormalizedString other)
-        {
-            if (other == null)
-                return false;
-            return other.s.Equals(s, StringComparison.OrdinalIgnoreCase);
-        }
-
-        public override int GetHashCode()
-        {
-            return this.s.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return this.s;
-        }
-
-        public static implicit operator NormalizedString(string s) => new NormalizedString(s);
     }
 }

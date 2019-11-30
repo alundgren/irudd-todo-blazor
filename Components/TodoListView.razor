@@ -1,20 +1,35 @@
 @using Irudd.Todo.Data
 @using Irudd.Todo.Components
 @inject TodoService todoService
+@inject Blazored.LocalStorage.ILocalStorageService localStorage
 
 @code {
+    private const string LocalStorageKey = "StoredCategories_20191130.2";
     private List<TodoCategory> categories;
     private string newItemText;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync()
     {
-        categories = await todoService.GetCategoriesAsync();
-        todoService.RefreshRequested += RefreshMe;
+        todoService.OnChange += () => 
+        {
+            if(this.categories != null)
+                this.localStorage.SetItemAsync(LocalStorageKey, this.categories);
+            InvokeAsync(StateHasChanged);
+        };
+        return Task.CompletedTask;
     }
 
-    private void RefreshMe()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        InvokeAsync(StateHasChanged);
+        if(firstRender)
+        {
+            var storedCategories = await localStorage.GetItemAsync<List<TodoCategory>>(LocalStorageKey);
+            if(storedCategories == null)
+            {
+                this.categories = await todoService.GetCategories();
+            }
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task AddItem()
@@ -22,22 +37,35 @@
         if(string.IsNullOrWhiteSpace(this.newItemText))
             return;
         var c = this.categories.FirstOrDefault(x => x.IsFocused);
-        await this.todoService.AddItem(this.newItemText, c?.Text);
+        var newItemText = this.newItemText;
         this.newItemText = "";
-        this.todoService.CallRequestRefresh();
+        await this.todoService.AddItem(newItemText, c?.Text);         
     }
 
     private IEnumerable<TodoCategory> GetVisibleCategories()
     {
-      var f = categories.FirstOrDefault(x => x.IsFocused);
-      if(f != null) {
-        yield return f;
-      } else {
-        foreach(var c in categories)
-        {
-          yield return c;
+        if(categories == null)
+            yield break;
+        var f = categories.FirstOrDefault(x => x.IsFocused);
+        if(f != null) {
+            yield return f;
+        } else {
+            foreach(var c in categories)
+            {
+            yield return c;
+            }
         }
-      }
+    }
+
+    private bool HasFocusedCategory() 
+    {
+        return categories != null && categories.Any(x => x.IsFocused);
+    }
+
+    private async Task RemoveDone()
+    {
+        var done = categories.SelectMany(x => x.Items.Where(y => y.IsDone).Select(y => Tuple.Create(x.Text, y.Text))).ToList();
+        await todoService.RemoveDone(done);
     }
 }
 
@@ -55,14 +83,14 @@
         </div>          
         </form>
     </div>
-    <div class="card-body @(categories.Any(x => x.IsFocused) ? "card-body-focused" : "")">
+    <div class="card-body @(HasFocusedCategory() ? "card-body-focused" : "")">
         @foreach(var category in GetVisibleCategories())
         {
-            <TodoCategoryView  Category="@category"></TodoCategoryView>
+            <TodoCategoryView Category="@category"></TodoCategoryView>
         }
     </div>
     <div class="card-footer">
-        <span><i class="fa fa-trash-o pull-right trash"></i></span>
+        <span @onclick="RemoveDone"><i class="fa fa-trash-o pull-right trash"></i></span>
     </div>
     </div>  
 </div>

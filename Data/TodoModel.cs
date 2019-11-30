@@ -1,19 +1,21 @@
 using System;
-using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Irudd.Todo.Data
 {
-    public class TodoItem
+    public class TodoItem : IEquatable<TodoItem>
     {
         public NormalizedString Text { get; set; }
         public bool IsDone { get; set; }
-    }
 
-    public class TodoCategory
-    {
-        public NormalizedString Text { get; set; }
-        public bool IsFocused { get; set; }
-        public bool IsDefaultCategory { get; set; }
-        public List<TodoItem> Items { get; set; }
+        public bool Equals([AllowNull] TodoItem other)
+        {
+            return other == null ? false : Text.Equals(other.Text);
+        }
+
+        public override int GetHashCode()
+        {
+            return Text.GetHashCode();
+        }
     }
 }

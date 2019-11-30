@@ -9,16 +9,14 @@
     private async Task ChangeToItem() 
     {
         await todoService.ConvertToItem(Category.Text);
-        todoService.CallRequestRefresh();
     }
 
-    private void ToggleFocus() 
+    private async Task ToggleFocus() 
     {
-        Category.IsFocused = !Category.IsFocused;
-        todoService.CallRequestRefresh();
+        await todoService.SetIsCategoryFocused(Category.Text, !Category.IsFocused);
     }
 }
-<div @onclick="ToggleFocus" class="alert alert-info" style="margin-left:-1.25em">@Category.Text @if(!Category.IsDefaultCategory) { <span class="to-item"><i @onclick="ChangeToItem" class="fa fa-arrow-circle-o-right pull-right"></i></span> }</div>
+<div @onclick="ToggleFocus" class="alert alert-info" style="margin-left:-1.25em">@Category.Text @if(!Category.IsDefaultCategory && !Category.IsFocused) { <span class="to-item"><i @onclick="ChangeToItem" class="fa fa-arrow-circle-o-right pull-right"></i></span> }</div>
 @foreach (var item in Category.Items)
 {
     <TodoItemView Item="@item" Category="@Category"></TodoItemView>
